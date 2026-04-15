@@ -10,12 +10,15 @@ import { AuthService } from './auth.service';
 @Controller('auth')
 export class AuthController {
   private readonly refreshExpiresDays: number;
+  private readonly refreshCookieSecure: boolean;
 
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
   ) {
     this.refreshExpiresDays = this.configService.get<number>('JWT_REFRESH_EXPIRES_DAYS', 30);
+    this.refreshCookieSecure =
+      this.configService.get<string>('REFRESH_COOKIE_SECURE', 'false') === 'true';
   }
 
   @Get('me')
@@ -62,14 +65,18 @@ export class AuthController {
       await this.authService.logout(refreshToken);
     }
 
-    res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: this.refreshCookieSecure,
+      sameSite: 'lax',
+    });
     return res.json({ message: 'Выход выполнен успешно' });
   }
 
   private setRefreshCookie(res: Response, token: string) {
     res.cookie('refreshToken', token, {
       httpOnly: true,
-      secure: false,
+      secure: this.refreshCookieSecure,
       sameSite: 'lax',
       maxAge: this.refreshExpiresDays * 24 * 60 * 60 * 1000,
     });

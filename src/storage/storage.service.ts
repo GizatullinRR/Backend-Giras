@@ -14,6 +14,8 @@ export type FilePayload = {
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
   private readonly bucket = 'workwear';
+  private readonly publicBaseUrl: string | null;
+  private readonly useSsl: boolean;
   private readonly endpoint: string;
   private readonly port: string;
 
@@ -21,8 +23,24 @@ export class StorageService implements OnModuleInit {
     @Inject('MINIO_CLIENT') private readonly minioClient: Minio.Client,
     private readonly configService: ConfigService,
   ) {
+    const rawPublic = this.configService.get<string>('MINIO_PUBLIC_BASE_URL')?.trim();
+    this.publicBaseUrl = rawPublic ? rawPublic.replace(/\/+$/, '') : null;
+    this.useSsl = this.configService.get<string>('MINIO_USE_SSL', 'false') === 'true';
     this.endpoint = this.configService.get<string>('MINIO_ENDPOINT', 'localhost');
     this.port = this.configService.get<string>('MINIO_PORT', '9000');
+  }
+
+  private buildObjectUrl(filename: string): string {
+    if (this.publicBaseUrl) {
+      return `${this.publicBaseUrl}/${this.bucket}/${filename}`;
+    }
+
+    const scheme = this.useSsl ? 'https' : 'http';
+    const defaultPort = this.useSsl ? '443' : '80';
+    if (this.port === defaultPort) {
+      return `${scheme}://${this.endpoint}/${this.bucket}/${filename}`;
+    }
+    return `${scheme}://${this.endpoint}:${this.port}/${this.bucket}/${filename}`;
   }
 
   async onModuleInit() {
@@ -67,7 +85,7 @@ export class StorageService implements OnModuleInit {
         'Content-Type': file.mimetype,
       });
 
-      return `http://${this.endpoint}:${this.port}/${this.bucket}/${filename}`;
+      return this.buildObjectUrl(filename);
     } catch (error) {
       this.logger.error('Ошибка при загрузке файла', error);
       throw new InternalServerErrorException('Ошибка при загрузке файла');
@@ -107,7 +125,7 @@ export class StorageService implements OnModuleInit {
           `/${this.bucket}/${filename}`,
         );
 
-        newUrls.push(`http://${this.endpoint}:${this.port}/${this.bucket}/${newFilename}`);
+        newUrls.push(this.buildObjectUrl(newFilename));
       } catch (error) {
         this.logger.error('Ошибка при копировании файла', error);
         throw new InternalServerErrorException('Ошибка при копировании файла');

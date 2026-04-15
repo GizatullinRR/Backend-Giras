@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { requireEnvString } from '../common/required-config';
 import { DatabaseModule } from '../database/database.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -19,7 +20,7 @@ import { TokenCleanupScheduler } from './schedulers/token-cleanup.scheduler';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_SECRET'),
+        secret: requireEnvString(configService, 'JWT_ACCESS_SECRET'),
       }),
       inject: [ConfigService],
     }),

@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { StorageModule } from './storage/storage.module';
 import { AuthModule } from './auth/auth.module';
 import { WorkwearModule } from './workwear/workwear.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -18,5 +19,6 @@ import { WorkwearModule } from './workwear/workwear.module';
     AuthModule,
     WorkwearModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}

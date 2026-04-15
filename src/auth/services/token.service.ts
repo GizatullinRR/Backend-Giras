@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { StringValue } from 'ms';
+import { requireEnvString } from '../../common/required-config';
 import { User } from '../entities/user.entity';
 import { UserRole } from '../user-role.enum';
 
@@ -17,8 +18,8 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
-    this.accessSecret = configService.get('JWT_ACCESS_SECRET', 'access_secret');
-    this.refreshSecret = configService.get('JWT_REFRESH_SECRET', 'refresh_secret');
+    this.accessSecret = requireEnvString(configService, 'JWT_ACCESS_SECRET');
+    this.refreshSecret = requireEnvString(configService, 'JWT_REFRESH_SECRET');
     this.accessExpiresIn = configService.get('JWT_ACCESS_EXPIRES_IN', '15m') as StringValue;
     this.refreshExpiresIn = configService.get('JWT_REFRESH_EXPIRES_IN', '30d') as StringValue;
     this.refreshExpiresDays = configService.get<number>('JWT_REFRESH_EXPIRES_DAYS', 30);
