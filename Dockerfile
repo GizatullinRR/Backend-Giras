@@ -1,5 +1,8 @@
 FROM node:22-bookworm-slim
 
+ARG PORT=3000
+ENV PORT=${PORT}
+
 WORKDIR /app
 
 RUN addgroup --system --gid 1001 nodejs \
@@ -17,6 +20,6 @@ RUN npm run build \
 
 USER nestjs
 
-EXPOSE 3000
+EXPOSE ${PORT}
 
 CMD ["node", "dist/main.js"]
