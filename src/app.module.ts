@@ -9,15 +9,15 @@ import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot({
-    //   isGlobal: true,
-    //   envFilePath: ['.env'],
-    // }),
-    // ScheduleModule.forRoot(),
-    // DatabaseModule,
-    // StorageModule,
-    // AuthModule,
-    // WorkwearModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env'],
+    }),
+    ScheduleModule.forRoot(),
+    DatabaseModule,
+    StorageModule,
+    AuthModule,
+    WorkwearModule,
   ],
   controllers: [HealthController],
 })
