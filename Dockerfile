@@ -1,25 +1,13 @@
-FROM node:22-bookworm-slim
+FROM node:18
 
-ARG PORT=3000
-ENV PORT=${PORT}
+WORKDIR /usr/src/app
 
-WORKDIR /app
+COPY package*.json ./ 
 
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nestjs
-
-COPY package.json package-lock.json ./
-RUN npm ci && npm cache clean --force
+RUN npm install
 
 COPY . .
 
-RUN npm run build \
-  && npm prune --omit=dev \
-  && npm cache clean --force \
-  && chown -R nestjs:nodejs /app
+RUN npm run build
 
-USER nestjs
-
-EXPOSE ${PORT}
-
-CMD ["node", "dist/main.js"]
+CMD [ "node", "dist/main.js" ]
