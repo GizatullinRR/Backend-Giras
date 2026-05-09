@@ -56,6 +56,5 @@ export class CreateWorkwearDto {
 
   @IsNotEmpty({ message: 'Материал обязателен для заполнения' })
   @IsString({ message: 'Материал должен быть строкой' })
-  @Length(1, 100, { message: 'Материал должен содержать от 1 до 100 символов' })
   material: string;
 }

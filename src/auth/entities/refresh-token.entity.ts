@@ -6,7 +6,7 @@ export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'text' })
   token: string;
 
   @Column({ type: 'timestamp' })

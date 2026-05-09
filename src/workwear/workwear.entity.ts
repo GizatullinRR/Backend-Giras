@@ -12,7 +12,7 @@ export class Workwear {
   @Column({ length: 200 })
   name: string;
 
-  @Column({ length: 500, nullable: true })
+  @Column({ type: 'text', nullable: true })
   description?: string;
 
   @Column({ type: 'enum', enum: WorkwearCategory })
@@ -42,7 +42,7 @@ export class Workwear {
   @Column('simple-array', { nullable: true })
   images?: string[];
 
-  @Column()
+  @Column({ type: 'text' })
   material: string;
 
   @Column({ default: 0 })

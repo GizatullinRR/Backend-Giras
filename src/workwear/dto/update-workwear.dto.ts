@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Length, Matches, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Length, Matches, Min, MinLength } from 'class-validator';
 import { WorkwearSize } from '../enums/size.enum';
 import { WorkwearSeason } from '../enums/season.enum';
 import { WorkwearItemSet } from '../enums/set.enum';
@@ -56,7 +56,7 @@ export class UpdateWorkwearDto {
 
   @IsOptional()
   @IsString({ message: 'Материал должен быть строкой' })
-  @Length(1, 100, { message: 'Материал должен содержать от 1 до 100 символов' })
+  @MinLength(1, { message: 'Материал не может быть пустым' })
   material?: string;
 
   @Transform(({ value }) => Array.isArray(value) ? value : value ? [value] : [])
