@@ -70,8 +70,15 @@ export class WorkwearService {
   }
 
   async copy(id: string, imageUrls: string[]): Promise<Workwear> {
-    const { id: _, createdAt, updatedAt, images: _images, order: _order, ...data } = await this.repo.findById(id);
-    return this.repo.create(data as CreateWorkwearDto, imageUrls);
+    const { id: _, createdAt, updatedAt, images: _images, order: _order, ...data } =
+      await this.repo.findById(id);
+    return this.repo.create(
+      {
+        ...(data as CreateWorkwearDto),
+        isCertified: data.isCertified === true,
+      },
+      imageUrls,
+    );
   }
 
   async reorder(items: { id: string; order: number }[]): Promise<{ success: true }> {

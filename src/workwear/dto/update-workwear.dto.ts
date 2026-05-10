@@ -4,6 +4,7 @@ import { WorkwearSeason } from '../enums/season.enum';
 import { WorkwearItemSet } from '../enums/set.enum';
 import { WorkwearCategory } from '../enums/category.enum';
 import { Transform, Type } from 'class-transformer';
+import { parseBooleanLike } from '../../common/parse-boolean-like';
 
 export class UpdateWorkwearDto {
   @IsOptional()
@@ -51,6 +52,10 @@ export class UpdateWorkwearDto {
   sku?: string;
 
   @IsOptional()
+  @Transform(({ obj, value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    return parseBooleanLike(obj?.isCertified) ?? parseBooleanLike(value) ?? value;
+  })
   @IsBoolean({ message: 'Статус сертификации должен быть логическим значением' })
   isCertified?: boolean;
 
