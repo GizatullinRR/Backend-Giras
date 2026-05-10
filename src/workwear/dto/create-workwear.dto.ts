@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Matches, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min, MinLength } from 'class-validator';
 import { WorkwearSize } from '../enums/size.enum';
 import { WorkwearSeason } from '../enums/season.enum';
 import { WorkwearItemSet } from '../enums/set.enum';
@@ -8,7 +8,7 @@ import { Transform, Type } from 'class-transformer';
 export class CreateWorkwearDto {
   @IsNotEmpty({ message: 'Название обязательно для заполнения' })
   @IsString({ message: 'Название должно быть строкой' })
-  @Length(1, 200, { message: 'Название должно содержать от 1 до 200 символов' })
+  @MinLength(1, { message: 'Название не может быть пустым' })
   name: string;
 
   @IsOptional()
@@ -27,7 +27,7 @@ export class CreateWorkwearDto {
 
   @IsNotEmpty({ message: 'Цвет обязателен для заполнения' })
   @IsString({ message: 'Цвет должен быть строкой' })
-  @Length(1, 100, { message: 'Цвет должен содержать от 1 до 100 символов' })
+  @MinLength(1, { message: 'Цвет не может быть пустым' })
   color: string;
 
   @IsNotEmpty({ message: 'Сезон обязателен для заполнения' })
@@ -46,7 +46,7 @@ export class CreateWorkwearDto {
 
   @IsNotEmpty({ message: 'Артикул обязателен для заполнения' })
   @IsString({ message: 'Артикул должен быть строкой' })
-  @Length(1, 50, { message: 'Артикул должен содержать от 1 до 50 символов' })
+  @MinLength(1, { message: 'Артикул не может быть пустым' })
   @Matches(/^[\p{L}0-9_-]+$/u, { message: 'Артикул: буквы (в т.ч. кириллица), цифры, дефис и подчёркивание' })
   sku: string;
 

@@ -1,8 +1,7 @@
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class ListWorkwearSearchDto {
   @IsOptional()
   @IsString()
-  @MaxLength(200)
   q?: string;
 }

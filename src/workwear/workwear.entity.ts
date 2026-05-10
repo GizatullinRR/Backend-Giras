@@ -9,7 +9,7 @@ export class Workwear {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ length: 200 })
+  @Column({ type: 'text' })
   name: string;
 
   @Column({ type: 'text', nullable: true })
@@ -21,7 +21,7 @@ export class Workwear {
   @Column({ type: 'enum', enum: WorkwearSize, array: true })
   size: WorkwearSize[];
 
-  @Column({ length: 100 })
+  @Column({ type: 'text' })
   color: string;
 
   @Column({ type: 'enum', enum: WorkwearSeason })
@@ -33,7 +33,7 @@ export class Workwear {
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-  @Column({ length: 50 })
+  @Column({ type: 'text' })
   sku: string;
 
   @Column()
