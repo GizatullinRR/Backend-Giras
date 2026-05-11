@@ -12,6 +12,8 @@ export class AuthController {
   private readonly refreshExpiresDays: number;
   private readonly refreshCookieSecure: boolean;
   private readonly accessCookieSecure: boolean;
+  private readonly refreshCookieSameSite: 'lax' | 'strict' | 'none';
+  private readonly accessCookieSameSite: 'lax' | 'strict' | 'none';
   private readonly accessCookieMaxAgeMs: number;
 
   constructor(
@@ -24,6 +26,14 @@ export class AuthController {
     this.accessCookieSecure =
       this.configService.get<string>('ACCESS_COOKIE_SECURE', `${this.refreshCookieSecure}`) ===
       'true';
+    this.refreshCookieSameSite = this.parseSameSite(
+      this.configService.get<string>('REFRESH_COOKIE_SAME_SITE'),
+      'lax',
+    );
+    this.accessCookieSameSite = this.parseSameSite(
+      this.configService.get<string>('ACCESS_COOKIE_SAME_SITE'),
+      this.refreshCookieSameSite,
+    );
     this.accessCookieMaxAgeMs = this.parseDurationToMs(
       this.configService.get<string>('JWT_ACCESS_EXPIRES_IN', '15m'),
       15 * 60 * 1000,
@@ -82,34 +92,61 @@ export class AuthController {
   }
 
   private setAccessCookie(res: Response, token: string) {
+    const sameSite =
+      this.accessCookieSameSite === 'none' && !this.accessCookieSecure
+        ? 'lax'
+        : this.accessCookieSameSite;
     res.cookie('accessToken', token, {
       httpOnly: true,
       secure: this.accessCookieSecure,
-      sameSite: 'lax',
+      sameSite,
       maxAge: this.accessCookieMaxAgeMs,
     });
   }
 
   private setRefreshCookie(res: Response, token: string) {
+    const sameSite =
+      this.refreshCookieSameSite === 'none' && !this.refreshCookieSecure
+        ? 'lax'
+        : this.refreshCookieSameSite;
     res.cookie('refreshToken', token, {
       httpOnly: true,
       secure: this.refreshCookieSecure,
-      sameSite: 'lax',
+      sameSite,
       maxAge: this.refreshExpiresDays * 24 * 60 * 60 * 1000,
     });
   }
 
   private clearAuthCookies(res: Response) {
+    const accessSameSite =
+      this.accessCookieSameSite === 'none' && !this.accessCookieSecure
+        ? 'lax'
+        : this.accessCookieSameSite;
+    const refreshSameSite =
+      this.refreshCookieSameSite === 'none' && !this.refreshCookieSecure
+        ? 'lax'
+        : this.refreshCookieSameSite;
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: this.accessCookieSecure,
-      sameSite: 'lax',
+      sameSite: accessSameSite,
     });
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: this.refreshCookieSecure,
-      sameSite: 'lax',
+      sameSite: refreshSameSite,
     });
+  }
+
+  private parseSameSite(
+    rawValue: string | undefined,
+    fallback: 'lax' | 'strict' | 'none',
+  ): 'lax' | 'strict' | 'none' {
+    const value = rawValue?.trim().toLowerCase();
+    if (value === 'lax' || value === 'strict' || value === 'none') {
+      return value;
+    }
+    return fallback;
   }
 
   private parseDurationToMs(rawValue: string, fallback: number): number {
