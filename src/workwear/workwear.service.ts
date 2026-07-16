@@ -3,7 +3,6 @@ import { WorkwearRepository } from './workwear.repository';
 import { Workwear } from './workwear.entity';
 import { CreateWorkwearDto } from './dto/create-workwear.dto';
 import { UpdateWorkwearDto } from './dto/update-workwear.dto';
-import { ListWorkwearSearchDto } from './dto/list-workwear-search.dto';
 import { StorageService } from '../storage/storage.service';
 
 @Injectable()
@@ -15,12 +14,8 @@ export class WorkwearService {
     private readonly storage: StorageService,
   ) {}
 
-  findAll(query: ListWorkwearSearchDto): Promise<Workwear[]> {
-    const q = query.q?.trim();
-    if (!q) {
-      return this.repo.findAll();
-    }
-    return this.repo.findAllSearch(q);
+  findAll(): Promise<Workwear[]> {
+    return this.repo.findAll();
   }
 
   findById(id: string): Promise<Workwear> {

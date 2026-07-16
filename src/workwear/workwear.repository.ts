@@ -15,28 +15,6 @@ export class WorkwearRepository {
     return this.repo.find({ order: { order: 'ASC' } });
   }
 
-  findAllSearch(q: string): Promise<Workwear[]> {
-    const term = `%${q.trim()}%`;
-    return this.repo
-      .createQueryBuilder('w')
-      .where(
-        `(
-          w.name ILIKE :term OR
-          COALESCE(w.description, '') ILIKE :term OR
-          w.sku ILIKE :term OR
-          w.color ILIKE :term OR
-          w.material ILIKE :term OR
-          CAST(w.season AS text) ILIKE :term OR
-          CAST(w.set AS text) ILIKE :term OR
-          CAST(w.size AS text) ILIKE :term OR
-          CAST(w.category AS text) ILIKE :term
-        )`,
-        { term },
-      )
-      .orderBy('w.order', 'ASC')
-      .getMany();
-  }
-
   async findById(id: string): Promise<Workwear> {
     const workwear = await this.repo.findOne({ where: { id } });
     if (!workwear) {

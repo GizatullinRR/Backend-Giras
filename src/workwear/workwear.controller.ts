@@ -6,7 +6,6 @@ import {
   Delete,
   Body,
   Param,
-  Query,
   UseInterceptors,
   UploadedFiles,
   Patch,
@@ -21,7 +20,6 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/user-role.enum';
 import { WorkwearService } from './workwear.service';
 import { StorageService } from '../storage/storage.service';
-import { ListWorkwearSearchDto } from './dto/list-workwear-search.dto';
 
 @Controller('workwear')
 export class WorkwearController {
@@ -31,8 +29,8 @@ export class WorkwearController {
   ) {}
 
   @Get('get-all')
-  async getAll(@Query() query: ListWorkwearSearchDto) {
-    return this.workwearService.findAll(query);
+  async getAll() {
+    return this.workwearService.findAll();
   }
 
   @Get('get-one/:id')
