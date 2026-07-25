@@ -15,7 +15,11 @@ export class RefreshTokenRepository {
     return this.repo.findOne({ where: { token }, relations: ['user'] });
   }
 
-  async saveToken(user: User, token: string, expiresAt: Date): Promise<RefreshToken> {
+  async saveToken(
+    user: User,
+    token: string,
+    expiresAt: Date,
+  ): Promise<RefreshToken> {
     const refreshToken = this.repo.create({ token, expiresAt, user });
     return this.repo.save(refreshToken);
   }

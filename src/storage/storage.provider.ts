@@ -11,7 +11,10 @@ export const minioProviders = [
         port: parseInt(configService.get('MINIO_PORT', '9000'), 10),
         useSSL: configService.get('MINIO_USE_SSL', 'false') === 'true',
         accessKey: configService.get<string>('MINIO_ROOT_USER', 'minioadmin'),
-        secretKey: configService.get<string>('MINIO_ROOT_PASSWORD', 'minioadmin123'),
+        secretKey: configService.get<string>(
+          'MINIO_ROOT_PASSWORD',
+          'minioadmin123',
+        ),
       });
 
       try {

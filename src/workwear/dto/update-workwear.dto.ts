@@ -1,4 +1,14 @@
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Matches, Min, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  Min,
+  MinLength,
+} from 'class-validator';
 import { WorkwearSize } from '../enums/size.enum';
 import { WorkwearSeason } from '../enums/season.enum';
 import { WorkwearItemSet } from '../enums/set.enum';
@@ -17,13 +27,18 @@ export class UpdateWorkwearDto {
   description?: string;
 
   @IsOptional()
-  @IsEnum(WorkwearCategory, { message: `Категория должна быть одной из: ${Object.values(WorkwearCategory).join(', ')}` })
+  @IsEnum(WorkwearCategory, {
+    message: `Категория должна быть одной из: ${Object.values(WorkwearCategory).join(', ')}`,
+  })
   category?: WorkwearCategory;
 
-  @Transform(({ value }) => Array.isArray(value) ? value : [value])
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   @IsOptional()
   @IsArray({ message: 'Размеры должны быть в массиве' })
-  @IsEnum(WorkwearSize, { each: true, message: `Размер должен быть одним из: ${Object.values(WorkwearSize).join(', ')}` })
+  @IsEnum(WorkwearSize, {
+    each: true,
+    message: `Размер должен быть одним из: ${Object.values(WorkwearSize).join(', ')}`,
+  })
   size?: WorkwearSize[];
 
   @IsOptional()
@@ -32,11 +47,15 @@ export class UpdateWorkwearDto {
   color?: string;
 
   @IsOptional()
-  @IsEnum(WorkwearSeason, { message: `Сезон должен быть одним из значений: ${Object.values(WorkwearSeason).join(', ')}` })
+  @IsEnum(WorkwearSeason, {
+    message: `Сезон должен быть одним из значений: ${Object.values(WorkwearSeason).join(', ')}`,
+  })
   season?: WorkwearSeason;
 
   @IsOptional()
-  @IsEnum(WorkwearItemSet, { message: `Комплект должен быть одним из значений: ${Object.values(WorkwearItemSet).join(', ')}` })
+  @IsEnum(WorkwearItemSet, {
+    message: `Комплект должен быть одним из значений: ${Object.values(WorkwearItemSet).join(', ')}`,
+  })
   set?: WorkwearItemSet;
 
   @IsOptional()
@@ -48,15 +67,21 @@ export class UpdateWorkwearDto {
   @IsOptional()
   @IsString({ message: 'Артикул должен быть строкой' })
   @MinLength(1, { message: 'Артикул не может быть пустым' })
-  @Matches(/^[\p{L}0-9_-]+$/u, { message: 'Артикул: буквы (в т.ч. кириллица), цифры, дефис и подчёркивание' })
+  @Matches(/^[\p{L}0-9_-]+$/u, {
+    message: 'Артикул: буквы (в т.ч. кириллица), цифры, дефис и подчёркивание',
+  })
   sku?: string;
 
   @IsOptional()
   @Transform(({ obj, value }) => {
     if (value === undefined || value === null || value === '') return undefined;
-    return parseBooleanLike(obj?.isCertified) ?? parseBooleanLike(value) ?? value;
+    return (
+      parseBooleanLike(obj?.isCertified) ?? parseBooleanLike(value) ?? value
+    );
   })
-  @IsBoolean({ message: 'Статус сертификации должен быть логическим значением' })
+  @IsBoolean({
+    message: 'Статус сертификации должен быть логическим значением',
+  })
   isCertified?: boolean;
 
   @IsOptional()
@@ -64,7 +89,9 @@ export class UpdateWorkwearDto {
   @MinLength(1, { message: 'Материал не может быть пустым' })
   material?: string;
 
-  @Transform(({ value }) => Array.isArray(value) ? value : value ? [value] : [])
+  @Transform(({ value }) =>
+    Array.isArray(value) ? value : value ? [value] : [],
+  )
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

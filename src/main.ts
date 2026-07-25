@@ -8,11 +8,14 @@ function parseCorsOrigins(): string | string[] {
   if (!raw) {
     return 'http://localhost:4200';
   }
-  const list = raw.split(',').map((o) => o.trim()).filter(Boolean);
+  const list = raw
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   if (list.length === 0) {
     return 'http://localhost:4200';
   }
-  return list.length === 1 ? list[0]! : list;
+  return list.length === 1 ? list[0] : list;
 }
 
 async function bootstrap() {

@@ -10,6 +10,7 @@ import {
   UploadedFiles,
   Patch,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateWorkwearDto } from './dto/create-workwear.dto';
@@ -20,6 +21,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/user-role.enum';
 import { WorkwearService } from './workwear.service';
 import { StorageService } from '../storage/storage.service';
+import { FilterWorkwearDto } from './dto/filter-workwear.dto';
 
 @Controller('workwear')
 export class WorkwearController {
@@ -29,8 +31,8 @@ export class WorkwearController {
   ) {}
 
   @Get('get-all')
-  async getAll() {
-    return this.workwearService.findAll();
+  async getAll(@Query() query: FilterWorkwearDto) {
+    return this.workwearService.findAll(query);
   }
 
   @Get('get-one/:id')
@@ -63,7 +65,9 @@ export class WorkwearController {
       return await this.workwearService.create(dto, imageUrls);
     } catch (error) {
       if (imageUrls.length > 0) {
-        await Promise.allSettled(imageUrls.map((url) => this.storageService.deleteFile(url)));
+        await Promise.allSettled(
+          imageUrls.map((url) => this.storageService.deleteFile(url)),
+        );
       }
       throw error;
     }
@@ -76,13 +80,17 @@ export class WorkwearController {
     const originalImages = await this.workwearService.getImages(id);
 
     const imageUrls =
-      originalImages.length > 0 ? await this.storageService.copyFiles(originalImages) : [];
+      originalImages.length > 0
+        ? await this.storageService.copyFiles(originalImages)
+        : [];
 
     try {
       return await this.workwearService.copy(id, imageUrls);
     } catch (error) {
       if (imageUrls.length > 0) {
-        await Promise.allSettled(imageUrls.map((url) => this.storageService.deleteFile(url)));
+        await Promise.allSettled(
+          imageUrls.map((url) => this.storageService.deleteFile(url)),
+        );
       }
       throw error;
     }
@@ -117,7 +125,9 @@ export class WorkwearController {
       return await this.workwearService.update(id, restDto, imageUrls);
     } catch (error) {
       if (newImageUrls.length > 0) {
-        await Promise.allSettled(newImageUrls.map((url) => this.storageService.deleteFile(url)));
+        await Promise.allSettled(
+          newImageUrls.map((url) => this.storageService.deleteFile(url)),
+        );
       }
       throw error;
     }

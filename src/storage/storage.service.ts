@@ -1,4 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,10 +29,16 @@ export class StorageService implements OnModuleInit {
     @Inject('MINIO_CLIENT') private readonly minioClient: Minio.Client,
     private readonly configService: ConfigService,
   ) {
-    const rawPublic = this.configService.get<string>('MINIO_PUBLIC_BASE_URL')?.trim();
+    const rawPublic = this.configService
+      .get<string>('MINIO_PUBLIC_BASE_URL')
+      ?.trim();
     this.publicBaseUrl = rawPublic ? rawPublic.replace(/\/+$/, '') : null;
-    this.useSsl = this.configService.get<string>('MINIO_USE_SSL', 'false') === 'true';
-    this.endpoint = this.configService.get<string>('MINIO_ENDPOINT', 'localhost');
+    this.useSsl =
+      this.configService.get<string>('MINIO_USE_SSL', 'false') === 'true';
+    this.endpoint = this.configService.get<string>(
+      'MINIO_ENDPOINT',
+      'localhost',
+    );
     this.port = this.configService.get<string>('MINIO_PORT', '9000');
   }
 
@@ -63,7 +75,10 @@ export class StorageService implements OnModuleInit {
             },
           ],
         };
-        await this.minioClient.setBucketPolicy(this.bucket, JSON.stringify(policy));
+        await this.minioClient.setBucketPolicy(
+          this.bucket,
+          JSON.stringify(policy),
+        );
         this.logger.log(`Бакет "${this.bucket}" создан`);
       }
     } catch (error) {
@@ -81,9 +96,15 @@ export class StorageService implements OnModuleInit {
         ? file.buffer
         : Buffer.from((file.buffer as { data: number[] }).data);
 
-      await this.minioClient.putObject(this.bucket, filename, buffer, file.size, {
-        'Content-Type': file.mimetype,
-      });
+      await this.minioClient.putObject(
+        this.bucket,
+        filename,
+        buffer,
+        file.size,
+        {
+          'Content-Type': file.mimetype,
+        },
+      );
 
       return this.buildObjectUrl(filename);
     } catch (error) {

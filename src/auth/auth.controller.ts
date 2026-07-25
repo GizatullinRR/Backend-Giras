@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Res, Req, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Req,
+  Get,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { RegisterDto } from './dto/register.dto';
@@ -20,12 +28,18 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
   ) {
-    this.refreshExpiresDays = this.configService.get<number>('JWT_REFRESH_EXPIRES_DAYS', 30);
+    this.refreshExpiresDays = this.configService.get<number>(
+      'JWT_REFRESH_EXPIRES_DAYS',
+      30,
+    );
     this.refreshCookieSecure =
-      this.configService.get<string>('REFRESH_COOKIE_SECURE', 'false') === 'true';
-    this.accessCookieSecure =
-      this.configService.get<string>('ACCESS_COOKIE_SECURE', `${this.refreshCookieSecure}`) ===
+      this.configService.get<string>('REFRESH_COOKIE_SECURE', 'false') ===
       'true';
+    this.accessCookieSecure =
+      this.configService.get<string>(
+        'ACCESS_COOKIE_SECURE',
+        `${this.refreshCookieSecure}`,
+      ) === 'true';
     this.refreshCookieSameSite = this.parseSameSite(
       this.configService.get<string>('REFRESH_COOKIE_SAME_SITE'),
       'lax',

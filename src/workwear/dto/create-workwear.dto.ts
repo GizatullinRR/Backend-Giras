@@ -1,4 +1,15 @@
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Min, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  Min,
+  MinLength,
+} from 'class-validator';
 import { WorkwearSize } from '../enums/size.enum';
 import { WorkwearSeason } from '../enums/season.enum';
 import { WorkwearItemSet } from '../enums/set.enum';
@@ -17,13 +28,18 @@ export class CreateWorkwearDto {
   description: string;
 
   @IsNotEmpty({ message: 'Категория обязательна для заполнения' })
-  @IsEnum(WorkwearCategory, { message: `Категория должна быть одной из: ${Object.values(WorkwearCategory).join(', ')}` })
+  @IsEnum(WorkwearCategory, {
+    message: `Категория должна быть одной из: ${Object.values(WorkwearCategory).join(', ')}`,
+  })
   category: WorkwearCategory;
 
-  @Transform(({ value }) => Array.isArray(value) ? value : [value])
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   @IsNotEmpty({ message: 'Размер обязателен для заполнения' })
   @IsArray({ message: 'Размеры должны быть в массиве' })
-  @IsEnum(WorkwearSize, { each: true, message: `Размер должен быть одним из: ${Object.values(WorkwearSize).join(', ')}` })
+  @IsEnum(WorkwearSize, {
+    each: true,
+    message: `Размер должен быть одним из: ${Object.values(WorkwearSize).join(', ')}`,
+  })
   size: WorkwearSize[];
 
   @IsNotEmpty({ message: 'Цвет обязателен для заполнения' })
@@ -32,11 +48,15 @@ export class CreateWorkwearDto {
   color: string;
 
   @IsNotEmpty({ message: 'Сезон обязателен для заполнения' })
-  @IsEnum(WorkwearSeason, { message: `Сезон должен быть одним из значений: ${Object.values(WorkwearSeason).join(', ')}` })
+  @IsEnum(WorkwearSeason, {
+    message: `Сезон должен быть одним из значений: ${Object.values(WorkwearSeason).join(', ')}`,
+  })
   season: WorkwearSeason;
 
   @IsNotEmpty({ message: 'Комплект обязателен для заполнения' })
-  @IsEnum(WorkwearItemSet, { message: `Комплект должен быть одним из значений: ${Object.values(WorkwearItemSet).join(', ')}` })
+  @IsEnum(WorkwearItemSet, {
+    message: `Комплект должен быть одним из значений: ${Object.values(WorkwearItemSet).join(', ')}`,
+  })
   set: WorkwearItemSet;
 
   @IsNotEmpty({ message: 'Цена обязательна для заполнения' })
@@ -48,12 +68,19 @@ export class CreateWorkwearDto {
   @IsNotEmpty({ message: 'Артикул обязателен для заполнения' })
   @IsString({ message: 'Артикул должен быть строкой' })
   @MinLength(1, { message: 'Артикул не может быть пустым' })
-  @Matches(/^[\p{L}0-9_-]+$/u, { message: 'Артикул: буквы (в т.ч. кириллица), цифры, дефис и подчёркивание' })
+  @Matches(/^[\p{L}0-9_-]+$/u, {
+    message: 'Артикул: буквы (в т.ч. кириллица), цифры, дефис и подчёркивание',
+  })
   sku: string;
 
   @IsNotEmpty({ message: 'Статус сертификации обязателен для заполнения' })
-  @Transform(({ obj, value }) => parseBooleanLike(obj?.isCertified) ?? parseBooleanLike(value) ?? value)
-  @IsBoolean({ message: 'Статус сертификации должен быть логическим значением' })
+  @Transform(
+    ({ obj, value }) =>
+      parseBooleanLike(obj?.isCertified) ?? parseBooleanLike(value) ?? value,
+  )
+  @IsBoolean({
+    message: 'Статус сертификации должен быть логическим значением',
+  })
   isCertified: boolean;
 
   @IsNotEmpty({ message: 'Материал обязателен для заполнения' })

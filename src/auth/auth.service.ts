@@ -1,4 +1,9 @@
-import { Injectable, Logger, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './repositories/user.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
@@ -28,7 +33,9 @@ export class AuthService {
     return this.tokenService.verifyAccess(accessToken);
   }
 
-  async register(dto: RegisterDto): Promise<{ accessToken: string; refreshToken: string }> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const existing = await this.userRepo.findByEmail(dto.email);
     if (existing) {
       throw new ConflictException('Пользователь с таким email уже существует');
@@ -42,13 +49,16 @@ export class AuthService {
       role: UserRole.USER,
     });
 
-    const { accessToken, refreshToken, expiresAt } = this.tokenService.createTokenPair(user);
+    const { accessToken, refreshToken, expiresAt } =
+      this.tokenService.createTokenPair(user);
     await this.refreshTokenRepo.saveToken(user, refreshToken, expiresAt);
 
     return { accessToken, refreshToken };
   }
 
-  async login(dto: LoginDto): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(
+    dto: LoginDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const user = await this.userRepo.findByEmail(dto.email);
     if (!user) {
       throw new UnauthorizedException('Неверный email или пароль');
@@ -59,13 +69,16 @@ export class AuthService {
       throw new UnauthorizedException('Неверный email или пароль');
     }
 
-    const { accessToken, refreshToken, expiresAt } = this.tokenService.createTokenPair(user);
+    const { accessToken, refreshToken, expiresAt } =
+      this.tokenService.createTokenPair(user);
     await this.refreshTokenRepo.saveToken(user, refreshToken, expiresAt);
 
     return { accessToken, refreshToken };
   }
 
-  async refresh(token: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refresh(
+    token: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const tokenEntity = await this.refreshTokenRepo.findByToken(token);
 
     if (!tokenEntity) {
@@ -79,8 +92,13 @@ export class AuthService {
 
     await this.refreshTokenRepo.remove(tokenEntity);
 
-    const { accessToken, refreshToken, expiresAt } = this.tokenService.createTokenPair(tokenEntity.user);
-    await this.refreshTokenRepo.saveToken(tokenEntity.user, refreshToken, expiresAt);
+    const { accessToken, refreshToken, expiresAt } =
+      this.tokenService.createTokenPair(tokenEntity.user);
+    await this.refreshTokenRepo.saveToken(
+      tokenEntity.user,
+      refreshToken,
+      expiresAt,
+    );
 
     return { accessToken, refreshToken };
   }

@@ -1,9 +1,14 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { WorkwearRepository } from './workwear.repository';
 import { Workwear } from './workwear.entity';
 import { CreateWorkwearDto } from './dto/create-workwear.dto';
 import { UpdateWorkwearDto } from './dto/update-workwear.dto';
 import { StorageService } from '../storage/storage.service';
+import { FilterWorkwearDto } from './dto/filter-workwear.dto';
 
 @Injectable()
 export class WorkwearService {
@@ -14,8 +19,8 @@ export class WorkwearService {
     private readonly storage: StorageService,
   ) {}
 
-  findAll(): Promise<Workwear[]> {
-    return this.repo.findAll();
+  findAll(filters: FilterWorkwearDto): Promise<Workwear[]> {
+    return this.repo.findFiltered(filters);
   }
 
   findById(id: string): Promise<Workwear> {
@@ -35,9 +40,15 @@ export class WorkwearService {
     }
   }
 
-  async update(id: string, dto: UpdateWorkwearDto, imageUrls: string[]): Promise<Workwear> {
+  async update(
+    id: string,
+    dto: UpdateWorkwearDto,
+    imageUrls: string[],
+  ): Promise<Workwear> {
     const workwear = await this.repo.findById(id);
-    const removedImages = (workwear.images ?? []).filter((url) => !imageUrls.includes(url));
+    const removedImages = (workwear.images ?? []).filter(
+      (url) => !imageUrls.includes(url),
+    );
     try {
       Object.assign(workwear, dto);
       workwear.images = imageUrls;
@@ -52,7 +63,9 @@ export class WorkwearService {
       return saved;
     } catch (error) {
       this.logger.error('Ошибка при обновлении спецодежды', error);
-      throw new InternalServerErrorException('Ошибка при обновлении спецодежды');
+      throw new InternalServerErrorException(
+        'Ошибка при обновлении спецодежды',
+      );
     }
   }
 
@@ -65,8 +78,14 @@ export class WorkwearService {
   }
 
   async copy(id: string, imageUrls: string[]): Promise<Workwear> {
-    const { id: _, createdAt, updatedAt, images: _images, order: _order, ...data } =
-      await this.repo.findById(id);
+    const {
+      id: _,
+      createdAt,
+      updatedAt,
+      images: _images,
+      order: _order,
+      ...data
+    } = await this.repo.findById(id);
     return this.repo.create(
       {
         ...(data as CreateWorkwearDto),
@@ -76,7 +95,9 @@ export class WorkwearService {
     );
   }
 
-  async reorder(items: { id: string; order: number }[]): Promise<{ success: true }> {
+  async reorder(
+    items: { id: string; order: number }[],
+  ): Promise<{ success: true }> {
     await this.repo.reorder(items);
     return { success: true };
   }

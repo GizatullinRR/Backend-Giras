@@ -20,12 +20,19 @@ export class TokenService {
   ) {
     this.accessSecret = requireEnvString(configService, 'JWT_ACCESS_SECRET');
     this.refreshSecret = requireEnvString(configService, 'JWT_REFRESH_SECRET');
-    this.accessExpiresIn = configService.get('JWT_ACCESS_EXPIRES_IN', '15m') as StringValue;
-    this.refreshExpiresIn = configService.get('JWT_REFRESH_EXPIRES_IN', '30d') as StringValue;
-    this.refreshExpiresDays = configService.get<number>('JWT_REFRESH_EXPIRES_DAYS', 30);
+    this.accessExpiresIn = configService.get('JWT_ACCESS_EXPIRES_IN', '15m');
+    this.refreshExpiresIn = configService.get('JWT_REFRESH_EXPIRES_IN', '30d');
+    this.refreshExpiresDays = configService.get<number>(
+      'JWT_REFRESH_EXPIRES_DAYS',
+      30,
+    );
   }
 
-  createTokenPair(user: User): { accessToken: string; refreshToken: string; expiresAt: Date } {
+  createTokenPair(user: User): {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: Date;
+  } {
     const accessToken = this.jwtService.sign(
       { sub: user.id, role: user.role },
       { secret: this.accessSecret, expiresIn: this.accessExpiresIn },
@@ -44,9 +51,12 @@ export class TokenService {
 
   verifyAccess(token: string): { id: string; role: UserRole } {
     try {
-      const payload = this.jwtService.verify<{ sub: string; role: UserRole }>(token, {
-        secret: this.accessSecret,
-      });
+      const payload = this.jwtService.verify<{ sub: string; role: UserRole }>(
+        token,
+        {
+          secret: this.accessSecret,
+        },
+      );
       return { id: payload.sub, role: payload.role };
     } catch {
       throw new UnauthorizedException('Невалидный токен');

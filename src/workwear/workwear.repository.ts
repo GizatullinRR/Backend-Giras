@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Workwear } from './workwear.entity';
 import { CreateWorkwearDto } from './dto/create-workwear.dto';
+import { FilterWorkwearDto } from './dto/filter-workwear.dto';
 
 @Injectable()
 export class WorkwearRepository {
@@ -11,8 +12,36 @@ export class WorkwearRepository {
     this.repo = dataSource.getRepository(Workwear);
   }
 
-  findAll(): Promise<Workwear[]> {
-    return this.repo.find({ order: { order: 'ASC' } });
+  findFiltered(filters: FilterWorkwearDto): Promise<Workwear[]> {
+    const qb = this.repo.createQueryBuilder('w').orderBy('w.order', 'ASC');
+
+    if (filters.category) {
+      qb.andWhere('w.category = :category', { category: filters.category });
+    }
+
+    if (filters.season) {
+      qb.andWhere('w.season = :season', { season: filters.season });
+    }
+
+    if (filters.set) {
+      qb.andWhere('w.set = :set', { set: filters.set });
+    }
+
+    if (typeof filters.isCertified === 'boolean') {
+      qb.andWhere('w.isCertified = :isCertified', {
+        isCertified: filters.isCertified,
+      });
+    }
+
+    if (typeof filters.priceFrom === 'number') {
+      qb.andWhere('w.price >= :priceFrom', { priceFrom: filters.priceFrom });
+    }
+
+    if (typeof filters.priceTo === 'number') {
+      qb.andWhere('w.price <= :priceTo', { priceTo: filters.priceTo });
+    }
+
+    return qb.getMany();
   }
 
   async findById(id: string): Promise<Workwear> {
@@ -25,7 +54,11 @@ export class WorkwearRepository {
 
   async create(dto: CreateWorkwearDto, imageUrls: string[]): Promise<Workwear> {
     const maxOrder = (await this.repo.maximum('order')) ?? -1;
-    const entity = this.repo.create({ ...dto, images: imageUrls, order: maxOrder + 1 });
+    const entity = this.repo.create({
+      ...dto,
+      images: imageUrls,
+      order: maxOrder + 1,
+    });
     return this.repo.save(entity);
   }
 

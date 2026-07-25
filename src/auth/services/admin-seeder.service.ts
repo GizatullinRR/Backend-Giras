@@ -19,7 +19,9 @@ export class AdminSeeder implements OnModuleInit {
     const name = this.configService.get<string>('ADMIN_NAME', 'Admin');
 
     if (!email || !password) {
-      this.logger.warn('ADMIN_EMAIL или ADMIN_PASSWORD не заданы — админ не создан');
+      this.logger.warn(
+        'ADMIN_EMAIL или ADMIN_PASSWORD не заданы — админ не создан',
+      );
       return;
     }
 
@@ -30,7 +32,12 @@ export class AdminSeeder implements OnModuleInit {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await this.userRepo.create({ email, password: hashedPassword, name, role: UserRole.ADMIN });
+    await this.userRepo.create({
+      email,
+      password: hashedPassword,
+      name,
+      role: UserRole.ADMIN,
+    });
     this.logger.log('Админ создан успешно');
   }
 }
