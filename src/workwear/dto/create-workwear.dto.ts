@@ -14,6 +14,7 @@ import { WorkwearSize } from '../enums/size.enum';
 import { WorkwearSeason } from '../enums/season.enum';
 import { WorkwearItemSet } from '../enums/set.enum';
 import { WorkwearCategory } from '../enums/category.enum';
+import { WorkwearGender } from '../enums/gender.enum';
 import { Transform, Type } from 'class-transformer';
 import { parseBooleanLike } from '../../common/parse-boolean-like';
 
@@ -55,6 +56,12 @@ export class CreateWorkwearDto {
     message: `Сезон должен быть одним из значений: ${Object.values(WorkwearSeason).join(', ')}`,
   })
   season: WorkwearSeason;
+
+  @IsNotEmpty({ message: 'Пол обязателен для заполнения' })
+  @IsEnum(WorkwearGender, {
+    message: `Пол должен быть одним из значений: ${Object.values(WorkwearGender).join(', ')}`,
+  })
+  gender: WorkwearGender;
 
   @IsNotEmpty({ message: 'Комплект обязателен для заполнения' })
   @IsEnum(WorkwearItemSet, {

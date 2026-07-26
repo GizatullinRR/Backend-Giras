@@ -23,6 +23,10 @@ export class WorkwearRepository {
       qb.andWhere('w.season = :season', { season: filters.season });
     }
 
+    if (filters.gender) {
+      qb.andWhere('w.gender = :gender', { gender: filters.gender });
+    }
+
     if (filters.set) {
       qb.andWhere('w.set = :set', { set: filters.set });
     }

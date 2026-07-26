@@ -9,6 +9,7 @@ import { WorkwearSize } from './enums/size.enum';
 import { WorkwearSeason } from './enums/season.enum';
 import { WorkwearItemSet } from './enums/set.enum';
 import { WorkwearCategory } from './enums/category.enum';
+import { WorkwearGender } from './enums/gender.enum';
 
 @Entity()
 export class Workwear {
@@ -32,6 +33,9 @@ export class Workwear {
 
   @Column({ type: 'enum', enum: WorkwearSeason })
   season: WorkwearSeason;
+
+  @Column({ type: 'enum', enum: WorkwearGender })
+  gender: WorkwearGender;
 
   @Column({ type: 'enum', enum: WorkwearItemSet })
   set: WorkwearItemSet;
