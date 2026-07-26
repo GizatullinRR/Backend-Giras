@@ -52,11 +52,11 @@ export class WorkwearRepository {
     return workwear;
   }
 
-  async create(dto: CreateWorkwearDto, imageUrls: string[]): Promise<Workwear> {
+  async create(dto: CreateWorkwearDto, imageKeys: string[]): Promise<Workwear> {
     const maxOrder = (await this.repo.maximum('order')) ?? -1;
     const entity = this.repo.create({
       ...dto,
-      images: imageUrls,
+      images: imageKeys,
       order: maxOrder + 1,
     });
     return this.repo.save(entity);

@@ -45,7 +45,7 @@ export class Workwear {
   @Column()
   isCertified: boolean;
 
-  @Column('simple-array', { nullable: true })
+  @Column({ type: 'text', array: true, nullable: true, default: {} })
   images?: string[];
 
   @Column({ type: 'text' })

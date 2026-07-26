@@ -33,7 +33,10 @@ export class CreateWorkwearDto {
   })
   category: WorkwearCategory;
 
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return value;
+    return Array.isArray(value) ? value : [value];
+  })
   @IsNotEmpty({ message: 'Размер обязателен для заполнения' })
   @IsArray({ message: 'Размеры должны быть в массиве' })
   @IsEnum(WorkwearSize, {

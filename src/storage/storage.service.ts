@@ -32,27 +32,30 @@ export class StorageService implements OnModuleInit {
     const rawPublic = this.configService
       .get<string>('MINIO_PUBLIC_BASE_URL')
       ?.trim();
+
     this.publicBaseUrl = rawPublic ? rawPublic.replace(/\/+$/, '') : null;
+
     this.useSsl =
       this.configService.get<string>('MINIO_USE_SSL', 'false') === 'true';
     this.endpoint = this.configService.get<string>(
       'MINIO_ENDPOINT',
       'localhost',
     );
+
     this.port = this.configService.get<string>('MINIO_PORT', '9000');
   }
 
-  private buildObjectUrl(filename: string): string {
+  toPublicUrl(key: string): string {
     if (this.publicBaseUrl) {
-      return `${this.publicBaseUrl}/${this.bucket}/${filename}`;
+      return `${this.publicBaseUrl}/${this.bucket}/${key}`;
     }
 
     const scheme = this.useSsl ? 'https' : 'http';
     const defaultPort = this.useSsl ? '443' : '80';
     if (this.port === defaultPort) {
-      return `${scheme}://${this.endpoint}/${this.bucket}/${filename}`;
+      return `${scheme}://${this.endpoint}/${this.bucket}/${key}`;
     }
-    return `${scheme}://${this.endpoint}:${this.port}/${this.bucket}/${filename}`;
+    return `${scheme}://${this.endpoint}:${this.port}/${this.bucket}/${key}`;
   }
 
   async onModuleInit() {
@@ -106,7 +109,7 @@ export class StorageService implements OnModuleInit {
         },
       );
 
-      return this.buildObjectUrl(filename);
+      return filename;
     } catch (error) {
       this.logger.error('Ошибка при загрузке файла', error);
       throw new InternalServerErrorException('Ошибка при загрузке файла');
@@ -117,11 +120,10 @@ export class StorageService implements OnModuleInit {
     return Promise.all(files.map((file) => this.uploadFile(file)));
   }
 
-  async deleteFile(url: string): Promise<void> {
+  async deleteFile(key: string): Promise<void> {
     try {
-      const filename = url.split('/').pop();
-      if (filename) {
-        await this.minioClient.removeObject(this.bucket, filename);
+      if (key) {
+        await this.minioClient.removeObject(this.bucket, key);
       }
     } catch (error) {
       this.logger.error('Ошибка при удалении файла', error);
@@ -129,30 +131,30 @@ export class StorageService implements OnModuleInit {
     }
   }
 
-  async copyFiles(urls: string[]): Promise<string[]> {
-    const newUrls: string[] = [];
+  async copyFiles(keys: string[]): Promise<string[]> {
+    const newKeys: string[] = [];
 
-    for (const url of urls) {
+    for (const key of keys) {
       try {
-        const filename = url.split('/').pop();
-        if (!filename) continue;
+        if (!key) continue;
 
-        const ext = filename.split('.').pop();
+        const ext = key.split('.').pop();
         const newFilename = `${uuidv4()}.${ext}`;
 
         await this.minioClient.copyObject(
           this.bucket,
           newFilename,
-          `/${this.bucket}/${filename}`,
+          `/${this.bucket}/${key}`,
         );
 
-        newUrls.push(this.buildObjectUrl(newFilename));
+        newKeys.push(newFilename);
       } catch (error) {
         this.logger.error('Ошибка при копировании файла', error);
         throw new InternalServerErrorException('Ошибка при копировании файла');
       }
     }
 
-    return newUrls;
+    return newKeys;
   }
+
 }

@@ -7,6 +7,7 @@ import { WorkwearRepository } from './workwear.repository';
 import { Workwear } from './workwear.entity';
 import { CreateWorkwearDto } from './dto/create-workwear.dto';
 import { UpdateWorkwearDto } from './dto/update-workwear.dto';
+import { WorkwearResponse } from './dto/workwear-response';
 import { StorageService } from '../storage/storage.service';
 import { FilterWorkwearDto } from './dto/filter-workwear.dto';
 
@@ -19,21 +20,27 @@ export class WorkwearService {
     private readonly storage: StorageService,
   ) {}
 
-  findAll(filters: FilterWorkwearDto): Promise<Workwear[]> {
-    return this.repo.findFiltered(filters);
+  async findAll(filters: FilterWorkwearDto): Promise<WorkwearResponse[]> {
+    const items = await this.repo.findFiltered(filters);
+    return items.map((item) => this.toResponse(item));
   }
 
-  findById(id: string): Promise<Workwear> {
-    return this.repo.findById(id);
+  async findById(id: string): Promise<WorkwearResponse> {
+    const workwear = await this.repo.findById(id);
+    return this.toResponse(workwear);
   }
 
   getImages(id: string): Promise<string[]> {
     return this.repo.getImages(id);
   }
 
-  async create(dto: CreateWorkwearDto, imageUrls: string[]): Promise<Workwear> {
+  async create(
+    dto: CreateWorkwearDto,
+    imageKeys: string[],
+  ): Promise<WorkwearResponse> {
     try {
-      return await this.repo.create(dto, imageUrls);
+      const createdItem = await this.repo.create(dto, imageKeys);
+      return this.toResponse(createdItem);
     } catch (error) {
       this.logger.error('Ошибка при создании спецодежды', error);
       throw new InternalServerErrorException('Ошибка при создании спецодежды');
@@ -43,41 +50,41 @@ export class WorkwearService {
   async update(
     id: string,
     dto: UpdateWorkwearDto,
-    imageUrls: string[],
-  ): Promise<Workwear> {
+    imageKeys?: string[],
+  ): Promise<WorkwearResponse> {
     const workwear = await this.repo.findById(id);
-    const removedImages = (workwear.images ?? []).filter(
-      (url) => !imageUrls.includes(url),
-    );
-    try {
-      Object.assign(workwear, dto);
-      workwear.images = imageUrls;
+    Object.assign(workwear, dto);
+
+    if (imageKeys !== undefined) {
+      const removed = (workwear.images ?? []).filter(
+        (key) => !imageKeys.includes(key),
+      );
+      workwear.images = imageKeys;
       const saved = await this.repo.save(workwear);
-      for (const url of removedImages) {
+      for (const key of removed) {
         try {
-          await this.storage.deleteFile(url);
+          await this.storage.deleteFile(key);
         } catch (e) {
-          this.logger.warn(`Не удалось удалить файл из хранилища: ${url}`, e);
+          this.logger.warn(`Не удалось удалить файл: ${key}`, e);
         }
       }
-      return saved;
-    } catch (error) {
-      this.logger.error('Ошибка при обновлении спецодежды', error);
-      throw new InternalServerErrorException(
-        'Ошибка при обновлении спецодежды',
-      );
+      return this.toResponse(saved);
     }
+
+    return this.toResponse(await this.repo.save(workwear));
   }
 
   async remove(id: string): Promise<{ message: string }> {
     const workwear = await this.repo.findById(id);
-    const urls = workwear.images ?? [];
+    const imageKeys = workwear.images ?? [];
     await this.repo.removeEntity(workwear);
-    await Promise.allSettled(urls.map((url) => this.storage.deleteFile(url)));
+    await Promise.allSettled(
+      imageKeys.map((key) => this.storage.deleteFile(key)),
+    );
     return { message: `Спецодежда с id ${id} удалена` };
   }
 
-  async copy(id: string, imageUrls: string[]): Promise<Workwear> {
+  async copy(id: string, imageKeys: string[]): Promise<WorkwearResponse> {
     const {
       id: _,
       createdAt,
@@ -86,13 +93,15 @@ export class WorkwearService {
       order: _order,
       ...data
     } = await this.repo.findById(id);
-    return this.repo.create(
+    const created = await this.repo.create(
       {
         ...(data as CreateWorkwearDto),
         isCertified: data.isCertified === true,
       },
-      imageUrls,
+      imageKeys,
     );
+
+    return this.toResponse(created);
   }
 
   async reorder(
@@ -100,5 +109,14 @@ export class WorkwearService {
   ): Promise<{ success: true }> {
     await this.repo.reorder(items);
     return { success: true };
+  }
+
+  private toResponse(workwear: Workwear): WorkwearResponse {
+    const imageKeys = workwear.images ?? [];
+    return {
+      ...workwear,
+      imageKeys,
+      images: imageKeys.map((key) => this.storage.toPublicUrl(key)),
+    };
   }
 }

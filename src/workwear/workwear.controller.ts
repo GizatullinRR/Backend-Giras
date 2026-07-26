@@ -48,7 +48,7 @@ export class WorkwearController {
     @Body() dto: CreateWorkwearDto,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    let imageUrls: string[] = [];
+    let imageKeys: string[] = [];
 
     if (files?.length > 0) {
       const serializedFiles = files.map((file) => ({
@@ -58,15 +58,15 @@ export class WorkwearController {
         size: file.size,
       }));
 
-      imageUrls = await this.storageService.uploadFiles(serializedFiles);
+      imageKeys = await this.storageService.uploadFiles(serializedFiles);
     }
 
     try {
-      return await this.workwearService.create(dto, imageUrls);
+      return await this.workwearService.create(dto, imageKeys);
     } catch (error) {
-      if (imageUrls.length > 0) {
+      if (imageKeys.length > 0) {
         await Promise.allSettled(
-          imageUrls.map((url) => this.storageService.deleteFile(url)),
+          imageKeys.map((key) => this.storageService.deleteFile(key)),
         );
       }
       throw error;
@@ -79,17 +79,17 @@ export class WorkwearController {
   async copyOne(@Param('id') id: string) {
     const originalImages = await this.workwearService.getImages(id);
 
-    const imageUrls =
+    const imageKeys =
       originalImages.length > 0
         ? await this.storageService.copyFiles(originalImages)
         : [];
 
     try {
-      return await this.workwearService.copy(id, imageUrls);
+      return await this.workwearService.copy(id, imageKeys);
     } catch (error) {
-      if (imageUrls.length > 0) {
+      if (imageKeys.length > 0) {
         await Promise.allSettled(
-          imageUrls.map((url) => this.storageService.deleteFile(url)),
+          imageKeys.map((key) => this.storageService.deleteFile(key)),
         );
       }
       throw error;
@@ -105,8 +105,8 @@ export class WorkwearController {
     @Body() dto: UpdateWorkwearDto,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const { existingImages = [], ...restDto } = dto;
-    let newImageUrls: string[] = [];
+    const { imageKeys, ...restDto } = dto;
+    let newImageKeys: string[] = [];
 
     if (files?.length > 0) {
       const serializedFiles = files.map((file) => ({
@@ -116,17 +116,22 @@ export class WorkwearController {
         size: file.size,
       }));
 
-      newImageUrls = await this.storageService.uploadFiles(serializedFiles);
+      newImageKeys = await this.storageService.uploadFiles(serializedFiles);
     }
 
-    const imageUrls = [...existingImages, ...newImageUrls];
+    const shouldTouchImages =
+      imageKeys !== undefined || newImageKeys.length > 0;
+
+    const nextKeys = shouldTouchImages
+      ? [...(imageKeys ?? []), ...newImageKeys]
+      : undefined;
 
     try {
-      return await this.workwearService.update(id, restDto, imageUrls);
+      return await this.workwearService.update(id, restDto, nextKeys);
     } catch (error) {
-      if (newImageUrls.length > 0) {
+      if (newImageKeys.length > 0) {
         await Promise.allSettled(
-          newImageUrls.map((url) => this.storageService.deleteFile(url)),
+          newImageKeys.map((key) => this.storageService.deleteFile(key)),
         );
       }
       throw error;

@@ -32,7 +32,10 @@ export class UpdateWorkwearDto {
   })
   category?: WorkwearCategory;
 
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   @IsOptional()
   @IsArray({ message: 'Размеры должны быть в массиве' })
   @IsEnum(WorkwearSize, {
@@ -89,11 +92,12 @@ export class UpdateWorkwearDto {
   @MinLength(1, { message: 'Материал не может быть пустым' })
   material?: string;
 
-  @Transform(({ value }) =>
-    Array.isArray(value) ? value : value ? [value] : [],
-  )
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  existingImages?: string[];
+  imageKeys?: string[];
 }
